@@ -1,0 +1,95 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net462;net471;net6.0;net8.0;net9.0</TargetFrameworks>
+		<LangVersion>12</LangVersion>
+		<Version>1.0.0</Version>
+		<Nullable>enable</Nullable>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<Authors>BobLd</Authors>
+		<PackageTags>PDF;Reader;Document;Adobe;PdfPig;pdf;file;C#;dotnet;.NET;font;fonts;standard14;ZapfDingbats;Symbol</PackageTags>
+		<RepositoryUrl>https://github.com/BobLd/Caly.PdfPig.Fonts</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/BobLd/Caly.PdfPig.Fonts</PackageProjectUrl>
+		<Description>Substitute font programs for the 14 PDF Standard fonts (Foxit and Liberation).</Description>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<!-- The code is Apache-2.0; the bundled Foxit fonts are BSD-3-Clause and the Liberation fonts OFL-1.1 (see THIRD-PARTY-NOTICES.md). -->
+		<PackageLicenseExpression>Apache-2.0 AND BSD-3-Clause AND OFL-1.1</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageId>Caly.PdfPig.Fonts</PackageId>
+		<Title>Caly.PdfPig.Fonts</Title>
+		<Product>Caly.PdfPig.Fonts</Product>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<PackageIcon>Icon.png</PackageIcon>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>Caly.PdfPig.Fonts.snk</AssemblyOriginatorKeyFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FontFile Include="Resources\*.pfb;Resources\*.ttf" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+		<Reference Include="System.IO.Compression" />
+	</ItemGroup>
+
+	<!--
+	The fonts are embedded as one zip (Deflate), which roughly halves the assembly size. It is built from the
+	unmodified files in Resources, so they stay comparable with their upstream sources. StandardFontSubstitutes
+	reads entries by file name from the Caly.PdfPig.Fonts.fonts.zip resource.
+	-->
+	<!-- Set in a target: IntermediateOutputPath is not defined yet when the project body is evaluated. -->
+	<Target Name="SetFontsZipPaths">
+		<PropertyGroup>
+			<FontsZipDirectory>$(IntermediateOutputPath)fonts\</FontsZipDirectory>
+			<FontsZipFile>$(IntermediateOutputPath)fonts.zip</FontsZipFile>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="ZipFonts" BeforeTargets="AssignTargetPaths" DependsOnTargets="SetFontsZipPaths" Inputs="@(FontFile)" Outputs="$(FontsZipFile)">
+		<RemoveDir Directories="$(FontsZipDirectory)" />
+		<Copy SourceFiles="@(FontFile)" DestinationFolder="$(FontsZipDirectory)" />
+		<ZipDirectory SourceDirectory="$(FontsZipDirectory)" DestinationFile="$(FontsZipFile)" Overwrite="true" />
+	</Target>
+
+	<Target Name="EmbedFontsZip" BeforeTargets="AssignTargetPaths" AfterTargets="ZipFonts">
+		<ItemGroup>
+			<EmbeddedResource Include="$(FontsZipFile)" LogicalName="Caly.PdfPig.Fonts.fonts.zip" />
+			<FileWrites Include="$(FontsZipFile);@(FontFile->'$(FontsZipDirectory)%(Filename)%(Extension)')" />
+		</ItemGroup>
+	</Target>
+
+	<ItemGroup>
+		<None Include="..\Icon.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\THIRD-PARTY-NOTICES.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="Resources\LICENSE_FOXIT">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="Resources\LICENSE_LIBERATION">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="PdfPig" Version="0.1.17-alpha-202610241040-2e2fe" />
+	</ItemGroup>
+
+</Project>

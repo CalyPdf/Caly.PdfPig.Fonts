@@ -1,0 +1,7 @@
+* text=auto
+*.pfb binary
+*.pfa binary
+*.ttf binary
+*.pdf binary
+*.png binary
+*.snk binary
