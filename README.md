@@ -11,9 +11,7 @@ StandardFontSubstitutes.Register(); // once, at startup
 
 using var document = PdfDocument.Open("file.pdf");
 ```
-
-`PdfPig.Rendering.Skia` references this package and calls `Register()` for you. Nothing is read or parsed until a
-document needs a glyph from a given font.
+Nothing is read or parsed until a document needs a glyph from a given font.
 
 Only glyph outlines come from the substitute. Text, widths and bounding boxes keep coming from the document and the
 Standard 14 metrics.
